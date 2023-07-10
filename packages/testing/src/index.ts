@@ -16,9 +16,10 @@ export type SetupOption = {
   wasmOverride?: string
   db?: string
   timeout?: number
+  buildBlockMode?: BuildBlockMode
 }
 
-export const setupContext = async ({ endpoint, blockNumber, blockHash, wasmOverride, db, timeout }: SetupOption) => {
+export const setupContext = async ({ endpoint, blockNumber, blockHash, wasmOverride, db, timeout, buildBlockMode = BuildBlockMode.Manual  }: SetupOption) => {
   // random port
   const port = Math.floor(Math.random() * 10000) + 10000
   const config = {
@@ -26,7 +27,7 @@ export const setupContext = async ({ endpoint, blockNumber, blockHash, wasmOverr
     port,
     block: blockNumber || blockHash,
     mockSignatureHost: true,
-    'build-block-mode': BuildBlockMode.Manual,
+    'build-block-mode': buildBlockMode,
     db,
     'wasm-override': wasmOverride,
   }

@@ -17,6 +17,7 @@ export enum BuildBlockMode {
   Batch, // one block per batch, default
   Instant, // one block per tx
   Manual, // only build when triggered
+  Periodiclly,
 }
 
 export interface DownwardMessage {
@@ -51,6 +52,8 @@ export class TxPool {
   readonly event = new EventEmitter()
 
   #isBuilding = false
+
+  #periodicllyBlockBuilding = true
 
   constructor(chain: Blockchain, inherentProvider: InherentProvider, mode: BuildBlockMode = BuildBlockMode.Batch) {
     this.#chain = chain
@@ -149,6 +152,8 @@ export class TxPool {
       case BuildBlockMode.Instant:
         this.buildBlock()
         break
+      case BuildBlockMode.Periodiclly:
+        this.#periodicllyBuildBlock()
       case BuildBlockMode.Manual:
         // does nothing
         break
@@ -156,6 +161,13 @@ export class TxPool {
   }
 
   #batchBuildBlock = _.debounce(this.buildBlock, 100, { maxWait: 1000 })
+
+  async #periodicllyBuildBlock() {
+    await this.buildBlock()
+    if (this.#periodicllyBlockBuilding) {
+      _.delay( this.#periodicllyBlockBuilding ,12*1000)
+    }
+  }
 
   async buildBlockWithParams(params: BuildBlockParams) {
     this.#pendingBlocks.push({
