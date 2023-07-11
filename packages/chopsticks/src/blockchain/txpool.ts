@@ -168,11 +168,15 @@ export class TxPool {
     if (this.#scheduledBlockPeriod) {
       return
     }
-    this.#scheduledBlockPeriod = true
-    await this.buildBlock()
-    tickFn?.() // inform client that task completed
-    _.delay(this.periodicllyBuildBlock ,12000)
-  }
+    this.#scheduledBlockPeriod = true 
+    try {
+      await this.buildBlock()
+      tickFn?.() // inform client that task completed
+      _.delay(this.periodicllyBuildBlock ,12000)
+    } finally {
+      this.#scheduledBlockPeriod = false
+    }
+ }
 
   async buildBlockWithParams(params: BuildBlockParams) {
     this.#pendingBlocks.push({
