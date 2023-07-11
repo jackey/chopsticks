@@ -17,12 +17,9 @@ describe('periodicly building blocks', async () => {
   it("upcoming block in periodicly works", async () => {
     expect(await chain.upcomingBlocks()).toEqual(0)
 
-    chain.txPool.periodicllyBuildBlock()
-    expect(await chain.upcomingBlocks()).toEqual(1)
-
-    await delay(12010)
-    expect(await chain.upcomingBlocks()).toEqual(2)
-
+    await chain.txPool.periodicllyBuildBlock(async () => {
+      await delay(12010)
+      expect(await chain.upcomingBlocks()).toEqual(1)
+    })
   })
-
 })

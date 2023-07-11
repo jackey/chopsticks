@@ -163,13 +163,14 @@ export class TxPool {
 
   #batchBuildBlock = _.debounce(this.buildBlock, 100, { maxWait: 1000 })
 
-  async periodicllyBuildBlock() {
+  async periodicllyBuildBlock(tickFn: () => void = undefined as any) {
     // Schedule only once
     if (this.#scheduledBlockPeriod) {
       return
     }
     this.#scheduledBlockPeriod = true
     await this.buildBlock()
+    tickFn?.() // inform client that task completed
     _.delay(this.periodicllyBuildBlock ,12000)
   }
 
