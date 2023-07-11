@@ -51,9 +51,9 @@ export class TxPool {
 
   readonly event = new EventEmitter()
 
-  #isBuilding = false
+  #scheduledBlockPeriod = false
 
-  #periodicllyBlockBuilding = true
+  #isBuilding = false
 
   constructor(chain: Blockchain, inherentProvider: InherentProvider, mode: BuildBlockMode = BuildBlockMode.Batch) {
     this.#chain = chain
@@ -153,7 +153,8 @@ export class TxPool {
         this.buildBlock()
         break
       case BuildBlockMode.Periodiclly:
-        this.#periodicllyBuildBlock()
+        this.periodicllyBuildBlock()
+        break
       case BuildBlockMode.Manual:
         // does nothing
         break
@@ -162,11 +163,14 @@ export class TxPool {
 
   #batchBuildBlock = _.debounce(this.buildBlock, 100, { maxWait: 1000 })
 
-  async #periodicllyBuildBlock() {
-    await this.buildBlock()
-    if (this.#periodicllyBlockBuilding) {
-      _.delay( this.#periodicllyBlockBuilding ,12*1000)
+  async periodicllyBuildBlock() {
+    // Schedule only once
+    if (this.#scheduledBlockPeriod) {
+      return
     }
+    this.#scheduledBlockPeriod = true
+    await this.buildBlock()
+    _.delay(this.periodicllyBuildBlock ,12000)
   }
 
   async buildBlockWithParams(params: BuildBlockParams) {
